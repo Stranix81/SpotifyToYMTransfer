@@ -99,44 +99,68 @@ async def transfer(spotify_token, ym_token):
     print(f"Spotify account name: {spotify_username}")
     
     # transfer favorite tracks
-    favorite_tracks = user_spotify.current_user_saved_tracks(limit=50)['items']
-        
-    #adding the tracks to favorites
-    for track in favorite_tracks:
-    # get the track's artist's name
-        track_artist = track['track']['artists'][0]['name']
-        # get the track's name
-        track_name = track['track']['name']   
-                
-        # create a query to search the track
-        query = track_artist + ' ' + track_name
-        # get the search result (filter: track)
-        search_result = user_ym.search(query)
-        await asyncio.sleep(0.5)
+    if input("Transfer favorite tracks? (Y/n)") == 'Y':    
+        favorite_tracks = user_spotify.current_user_saved_tracks(limit=50)['items']
 
-        #if the track is found
-        if search_result.best and type(search_result.best.result) == Track and search_result.best.result.artists[0].name == track_artist:
-            # get the track id
-            track_id = search_result.best.result.id
-                
-            # insert the track to the playlist
-            user_ym.users_likes_tracks_add(track_id)
-            print(f"\t{track_artist} - {track_name} is added to favorite tracks")
-                
-            await asyncio.sleep(1.5)
-        else: 
-            print(f"\t{track_artist} - {track_name} is not found and skipped")
-            continue
+        fav_option = int(input("Create a playlist or add tracks to favorite?(1/2)"))
+
+        if fav_option == 1:
+            playlist_name = 'Любимые треки из Spotify'
+            new_playlist_ym = user_ym.users_playlists_create(playlist_name)
+            print(f"Playlist '{playlist_name}' is created")
+            playlist_kind = new_playlist_ym.kind
+            position = 0
+            
+        for track in favorite_tracks:
+        # get the track's artist's name
+            track_artist = track['track']['artists'][0]['name']
+            # get the track's name
+            track_name = track['track']['name']           
+                    
+            # create a query to search the track
+            query = track_artist + ' ' + track_name
+            # get the search result (filter: track)
+            search_result = user_ym.search(query)
+            await asyncio.sleep(0.5)
+
+            #if the track is found
+            if search_result.best and type(search_result.best.result) == Track and search_result.best.result.artists[0].name == track_artist:
+                # get the track id
+                track_id = search_result.best.result.id
+                if fav_option == 1:
+                    # get the track album ID
+                    album_id = search_result.best.result.albums[0].id
+                    
+                    # get the playlist revision
+                    revision = new_playlist_ym.revision
+                    # insert the track to the playlist
+                    new_playlist_ym = user_ym.users_playlists_insert_track(kind = playlist_kind,
+                                                                           track_id = track_id,
+                                                                           album_id = album_id,
+                                                                           at = position,
+                                                                           revision = revision)                   
+                    position += 1
+                    print(f"\t{track_artist} - {track_name} is inserted to {playlist_name}")
+                else:
+                    # add the track to favs
+                    user_ym.users_likes_tracks_add(track_id)
+                    print(f"\t{track_artist} - {track_name} is added to favorite tracks")
+                        
+                await asyncio.sleep(1.5)
+            else: 
+                print(f"\t{track_artist} - {track_name} is not found and skipped")
+                continue
 
     # get a list of the user's playlists
     playlists = user_spotify.current_user_playlists()['items']
     
     # through the list of playlists
     for playlist in playlists:
-        # print(playlist['name'])
-
         # get the playlist name
         playlist_name = playlist['name']     
+
+        if input(f"Transfer '{playlist_name}'? (Y/n) ") == 'n':
+            continue
         
         # create a playlist with the same name in ym
         new_playlist_ym = user_ym.users_playlists_create(playlist_name)
@@ -175,7 +199,10 @@ async def transfer(spotify_token, ym_token):
                 revision = new_playlist_ym.revision
                 
                 # insert the track to the playlist
-                new_playlist_ym = user_ym.users_playlists_insert_track(kind = playlist_kind, track_id = track_id, album_id = album_id, at = position, revision = revision)
+                new_playlist_ym = user_ym.users_playlists_insert_track(kind = playlist_kind,
+                                                                       track_id = track_id,
+                                                                       album_id = album_id, at = position,
+                                                                       revision = revision)
                 print(f"\t{track_artist} - {track_name} is inserted to '{playlist_name}'")
                 
                 # update the track position in the playlist
