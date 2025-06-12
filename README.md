@@ -69,8 +69,8 @@
 * В Яндекс Музыке могут отсутствовать некоторые треки - программа об этом уведомит
 
 # 🔗 Ссылки:
-* [yandex-music-api](https://github.com/MarshalX/yandex-music-api/ "API ЯМ")
-* [Spotify API Docs](https://developer.spotify.com/documentation/web-api/ "API Spotify")
+* [Yandex Music API Docs](https://yandex-music.readthedocs.io/en/main/ "API documentation")
+* [Spotify API Docs](https://developer.spotify.com/documentation/web-api/ "API documentation")
 
 
 
