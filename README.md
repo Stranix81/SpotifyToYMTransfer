@@ -70,7 +70,7 @@
 
 # 🔗 Ссылки:
 * [Yandex Music API Docs](https://yandex-music.readthedocs.io/en/main/ "API documentation")
-* [Spotify API Docs](https://developer.spotify.com/documentation/web-api/ "API documentation")
+* [Spotipy API Docs](https://spotipy.readthedocs.io/en/2.25.1/#getting-started "API documentation")
 
 
 
